@@ -100,7 +100,6 @@ var allOvertimeEntries = [
   }
 ];
 
-
 app.get('/api/contacts', (req, res) => {
   const allContacts = contacts.map(contact => { 
     return { id: contact.id, name: contact.name}
@@ -117,7 +116,13 @@ app.get('/api/overtimes', (req, res) => {
 });
 
 app.get('/api/overtimes/:id', (req, res) => {
-  res.json(allOvertimeEntries.filter(entry => entry.id === parseInt(req.params.id)));
+  var entry;
+  if(req.params.id == 'new') {
+    entry = {id: -1, startTime: '18:00', endTime: '18:00'};
+  } else {
+    entry = allOvertimeEntries.filter(entry => entry.id === parseInt(req.params.id))[0];
+  }
+  res.json(entry);
 });
 
 
