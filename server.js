@@ -4,8 +4,10 @@ const express = require('express');
 const app = express();
 const jwt = require('express-jwt');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 
 app.use(cors());
+app.use(bodyParser.json());
 
 // Authentication middleware provided by express-jwt.
 // This middleware will check incoming requests for a valid
@@ -55,6 +57,11 @@ function getDateString(dateOffset){
   var mm = d.getMonth() >= 9 ? d.getMonth() + 1 : '0' + ( d.getMonth() + 1 );
   var yyyy = d.getFullYear();
   return dd + '.' + mm + '.' + yyyy;
+}
+
+function saveOvertime(overtime) {
+  allOvertimeEntries.push(overtime);
+  return true;
 }
 
 var allOvertimeEntries = [
@@ -123,6 +130,12 @@ app.get('/api/overtimes/:id', (req, res) => {
     entry = allOvertimeEntries.filter(entry => entry.id === parseInt(req.params.id))[0];
   }
   res.json(entry);
+});
+
+app.post('/api/overtimes/save', (req, res) => {
+  const overtime = req.body;
+  saveOvertime(overtime);
+  res.sendStatus(200);
 });
 
 
