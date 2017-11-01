@@ -59,11 +59,23 @@ function getDateString(dateOffset){
   return dd + '.' + mm + '.' + yyyy;
 }
 
-function saveOvertime(overtime) {
-  allOvertimeEntries.push(overtime);
-  return true;
+function saveOvertime(o) {
+  let overtime = Object.assign({}, o);
+  if(overtime.id != -1) {
+    for(let i=0; i<allOvertimeEntries.length; i++) {
+      if(allOvertimeEntries[i].id == overtime.id) {
+        allOvertimeEntries[i] = overtime;
+        break;
+      }
+    }
+  } else {
+    overtime.id = ++maxOvertimeId;
+    allOvertimeEntries.push(overtime);
+  }
+  return overtime;
 }
 
+var maxOvertimeId = 5;
 var allOvertimeEntries = [
   {
     id: 1,
@@ -133,9 +145,7 @@ app.get('/api/overtimes/:id', (req, res) => {
 });
 
 app.post('/api/overtimes/save', (req, res) => {
-  const overtime = req.body;
-  saveOvertime(overtime);
-  res.sendStatus(200);
+  res.json(saveOvertime(req.body));
 });
 
 
