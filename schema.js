@@ -91,10 +91,21 @@ var OvertimeType = new GraphQLObjectType({
     })
 })
 
-var promiseListAll = () => {
+var promiseAllOvertimes = () => {
     return new Promise((resolve, reject) => {
         resolve(allOvertimeEntries);
     })
+}
+
+var promiseGetOvertime = (id) => {
+  return new Promise((resolve, reject) => {
+    for (let i=0; i<allOvertimeEntries.length; i++){
+      if (allOvertimeEntries[i].id == id) {
+        resolve(allOvertimeEntries[i]);
+      }
+    }
+    reject("Id " + id + " could not be found!");
+  });
 }
 
 var QueryType = new GraphQLObjectType({
@@ -103,8 +114,18 @@ var QueryType = new GraphQLObjectType({
         overtimes: {
             type: new GraphQLList(OvertimeType),
             resolve: () => {
-                return promiseListAll()
+                return promiseAllOvertimes()
             }
+        },
+        overtime: {
+          type: OvertimeType,
+          description: "Find an Overtime by ID",
+          args: {
+            id: {type: new GraphQLNonNull(GraphQLID)}
+          },
+          resolve: (root, args) => {
+            return promiseGetOvertime(args.id);
+          }
         }
     })
 })
