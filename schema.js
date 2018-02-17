@@ -17,7 +17,7 @@ function getDateString(dateOffset) {
     return dd + '.' + mm + '.' + yyyy;
 }
 
-var maxOvertimeId = 5;
+var nextOvertimeId = 6;
 var allOvertimeEntries = [
     {
         id: 1,
@@ -135,6 +135,10 @@ var MutationAdd = {
     type: OvertimeType,
     description: 'Add an Overtime',
     args: {
+        id: {
+          name: 'Overtime ID',
+          type: GraphQLID
+        },
         date: {
             name: 'Overtime date',
             type: new GraphQLNonNull(GraphQLString)
@@ -157,18 +161,31 @@ var MutationAdd = {
         }
     },
     resolve: (root, args) => {
-        var newOvertime = {
-            id: 6,
-            date: args.date,
-            startTime: args.startTime,
-            endTime: args.endTime,
-            freeTimeOn: args.freeTimeOn,
-            comment: args.comment
+        let idx=-1;
+        if (args.id) {
+          for (let i=0; i<allOvertimeEntries.length; i++) {
+            if (allOvertimeEntries[i].id == args.id) {
+              idx = i;
+            }
+          }
         }
-        //newTodo.id = newTodo._id
+        overtime = {
+          id: args.id||nextOvertimeId,
+          date: args.date,
+          startTime: args.startTime,
+          endTime: args.endTime,
+          freeTimeOn: args.freeTimeOn,
+          comment: args.comment
+        };
+
         return new Promise((resolve, reject) => {
-            allOvertimeEntries.push(newOvertime);
-            resolve(newOvertime)
+            if(idx == -1) {
+              allOvertimeEntries.push(overtime);
+              nextOvertimeId = parseInt(overtime.id) + 1;
+            } else {
+              allOvertimeEntries[idx] = overtime;
+            }
+            resolve(overtime)
         })
     }
 }
