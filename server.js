@@ -3,11 +3,15 @@ var Schema = require('./schema')
 var graphQLHTTP = require('express-graphql')
 
 var app = express()
-app.use('/', graphQLHTTP({
-  schema: Schema,
-  pretty: true,
-  graphiql: true
-}))
+app.use('/', graphQLHTTP((req,res)=>{
+  res.set('Access-Control-Allow-Origin', '*');
+  return {
+    schema: Schema,
+    pretty: true,
+    graphiql: true
+  }
+}));
+
 app.listen(process.env.PORT || 8080, (err) => {
   if (err) {
     console.error(err)
@@ -62,7 +66,7 @@ app.listen(process.env.PORT || 8080, (err) => {
 //   if (date) {
 //     let parts = date.split('.');
 //     if (parts.length != 3) return false;
-    
+
 //     const d = parseInt(parts[0]);
 //     const m = parseInt(parts[1]);
 //     const y = parseInt(parts[2]);
