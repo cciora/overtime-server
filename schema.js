@@ -170,7 +170,7 @@ var MutationAdd = {
           }
         }
         overtime = {
-          id: args.id||nextOvertimeId,
+          id: (idx!=-1 ? args.id : nextOvertimeId),
           date: args.date,
           startTime: args.startTime,
           endTime: args.endTime,
