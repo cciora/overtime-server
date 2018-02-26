@@ -189,11 +189,40 @@ var MutationAdd = {
     }
 }
 
+var MutationDelete = {
+    type: OvertimeType,
+    description: 'Delete an Overtime',
+    args: {
+        id: {
+          name: 'Overtime ID',
+          type: GraphQLString
+        }
+    },
+    resolve: (root, args) => {
+        let idx = -1;
+        if (args.id) {
+          for (let i=0; i<allOvertimeEntries.length; i++) {
+            if (allOvertimeEntries[i].id == args.id) {
+              idx = i;
+            }
+          }
+        }
+        return new Promise((resolve, reject) => {
+            if(idx == -1) {
+              reject(args.id);
+            } else {
+              allOvertimeEntries.splice(idx,1);
+              resolve({id: args.id})
+            }
+        })
+    }
+}
+
 var MutationType = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
         add: MutationAdd,
-        //   destroy: MutationDestroy,
+        delete: MutationDelete,
         //   save: MutationSave
     }
 })
