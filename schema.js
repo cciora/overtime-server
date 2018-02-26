@@ -1,5 +1,6 @@
 //var Schema = mongoose.Schema
 var graphql = require('graphql')
+const uuidv4 = require('uuid/v4');
 var GraphQLObjectType = graphql.GraphQLObjectType
 var GraphQLBoolean = graphql.GraphQLBoolean
 var GraphQLID = graphql.GraphQLID
@@ -17,10 +18,9 @@ function getDateString(dateOffset) {
     return dd + '.' + mm + '.' + yyyy;
 }
 
-var nextOvertimeId = 6;
 var allOvertimeEntries = [
     {
-        id: 1,
+        id: uuidv4(),
         date: getDateString(0),
         startTime: '18:00',
         endTime: '21:00',
@@ -28,7 +28,7 @@ var allOvertimeEntries = [
         comment: 'HZM Deployment 1'
     },
     {
-        id: 2,
+        id: uuidv4(),
         date: getDateString(1),
         startTime: '18:00',
         endTime: '20:00',
@@ -36,7 +36,7 @@ var allOvertimeEntries = [
         comment: 'HZM Deployment 2'
     },
     {
-        id: 3,
+        id: uuidv4(),
         date: getDateString(2),
         startTime: '18:00',
         endTime: '20:00',
@@ -44,7 +44,7 @@ var allOvertimeEntries = [
         comment: 'HZM Deployment 3'
     },
     {
-        id: 4,
+        id: uuidv4(),
         date: getDateString(-31),
         startTime: '18:00',
         endTime: '20:00',
@@ -52,7 +52,7 @@ var allOvertimeEntries = [
         comment: 'HZM Deployment 4'
     },
     {
-        id: 5,
+        id: uuidv4(),
         date: getDateString(31),
         startTime: '18:00',
         endTime: '20:00',
@@ -65,7 +65,7 @@ var OvertimeType = new GraphQLObjectType({
     name: 'overtime',
     fields: () => ({
         id: {
-            type: GraphQLID,
+            type: GraphQLString,
             description: 'Overtime id'
         },
         date: {
@@ -137,7 +137,7 @@ var MutationAdd = {
     args: {
         id: {
           name: 'Overtime ID',
-          type: GraphQLID
+          type: GraphQLString
         },
         date: {
             name: 'Overtime date',
@@ -170,7 +170,7 @@ var MutationAdd = {
           }
         }
         overtime = {
-          id: (idx!=-1 ? args.id : nextOvertimeId),
+          id: (idx!=-1 ? args.id : uuidv4()),
           date: args.date,
           startTime: args.startTime,
           endTime: args.endTime,
@@ -181,7 +181,6 @@ var MutationAdd = {
         return new Promise((resolve, reject) => {
             if(idx == -1) {
               allOvertimeEntries.push(overtime);
-              nextOvertimeId = parseInt(overtime.id) + 1;
             } else {
               allOvertimeEntries[idx] = overtime;
             }
