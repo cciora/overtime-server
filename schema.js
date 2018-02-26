@@ -209,7 +209,7 @@ var MutationDelete = {
         }
         return new Promise((resolve, reject) => {
             if(idx == -1) {
-              reject(args.id);
+              reject('Could not delete the overtime with id ' + args.id);
             } else {
               allOvertimeEntries.splice(idx,1);
               resolve({id: args.id})
