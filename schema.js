@@ -153,11 +153,11 @@ var MutationAdd = {
         },
         freeTimeOn: {
             name: 'Overtime free time on',
-            type: new GraphQLNonNull(GraphQLString)
+            type: GraphQLString
         },
         comment: {
             name: 'Overtime comment',
-            type: new GraphQLNonNull(GraphQLString)
+            type: GraphQLString
         }
     },
     resolve: (root, args) => {
