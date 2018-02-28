@@ -1,65 +1,21 @@
 //var Schema = mongoose.Schema
 var graphql = require('graphql')
 const uuidv4 = require('uuid/v4');
-var GraphQLObjectType = graphql.GraphQLObjectType
-var GraphQLBoolean = graphql.GraphQLBoolean
-var GraphQLID = graphql.GraphQLID
-var GraphQLString = graphql.GraphQLString
-var GraphQLList = graphql.GraphQLList
-var GraphQLNonNull = graphql.GraphQLNonNull
-var GraphQLSchema = graphql.GraphQLSchema
+var GraphQLObjectType = graphql.GraphQLObjectType;
+var GraphQLBoolean = graphql.GraphQLBoolean;
+var GraphQLID = graphql.GraphQLID;
+var GraphQLString = graphql.GraphQLString;
+var GraphQLList = graphql.GraphQLList;
+var GraphQLNonNull = graphql.GraphQLNonNull;
+var GraphQLSchema = graphql.GraphQLSchema;
 
-function getDateString(dateOffset) {
-    let d = new Date();
-    d.setTime(d.getTime() + dateOffset * 86400000);
-    var dd = d.getDate() >= 10 ? d.getDate() : '0' + d.getDate();
-    var mm = d.getMonth() >= 9 ? d.getMonth() + 1 : '0' + (d.getMonth() + 1);
-    var yyyy = d.getFullYear();
-    return dd + '.' + mm + '.' + yyyy;
+var OvertimeDB = require('./db/OvertimeDB');
+
+var staticUser = "cciora";
+
+var isValidString = function(str) {
+    return str && str.trim() != "";
 }
-
-var allOvertimeEntries = [
-    {
-        id: uuidv4(),
-        date: getDateString(0),
-        startTime: '18:00',
-        endTime: '21:00',
-        freeTimeOn: '',
-        comment: 'HZM Deployment 1'
-    },
-    {
-        id: uuidv4(),
-        date: getDateString(1),
-        startTime: '18:00',
-        endTime: '20:00',
-        freeTimeOn: '19.10.2017',
-        comment: 'HZM Deployment 2'
-    },
-    {
-        id: uuidv4(),
-        date: getDateString(2),
-        startTime: '18:00',
-        endTime: '20:00',
-        freeTimeOn: '',
-        comment: 'HZM Deployment 3'
-    },
-    {
-        id: uuidv4(),
-        date: getDateString(-31),
-        startTime: '18:00',
-        endTime: '20:00',
-        freeTimeOn: '',
-        comment: 'HZM Deployment 4'
-    },
-    {
-        id: uuidv4(),
-        date: getDateString(31),
-        startTime: '18:00',
-        endTime: '20:00',
-        freeTimeOn: '',
-        comment: 'HZM Deployment 5'
-    }
-];
 
 var OvertimeType = new GraphQLObjectType({
     name: 'overtime',
@@ -67,6 +23,10 @@ var OvertimeType = new GraphQLObjectType({
         id: {
             type: GraphQLString,
             description: 'Overtime id'
+        },
+        user: {
+            type: GraphQLString,
+            description: 'User'
         },
         date: {
             type: GraphQLString,
@@ -93,18 +53,13 @@ var OvertimeType = new GraphQLObjectType({
 
 var promiseAllOvertimes = () => {
     return new Promise((resolve, reject) => {
-        resolve(allOvertimeEntries);
+        OvertimeDB.OvertimeDB.searchOvertimes(resolve, reject, {"user":staticUser});
     })
 }
 
 var promiseGetOvertime = (id) => {
   return new Promise((resolve, reject) => {
-    for (let i=0; i<allOvertimeEntries.length; i++){
-      if (allOvertimeEntries[i].id == id) {
-        resolve(allOvertimeEntries[i]);
-      }
-    }
-    reject("Id " + id + " could not be found!");
+    OvertimeDB.OvertimeDB.findOvertime(resolve, reject, {"id":id, "user":staticUser});
   });
 }
 
@@ -161,30 +116,33 @@ var MutationAdd = {
         }
     },
     resolve: (root, args) => {
-        let idx=-1;
-        if (args.id) {
-          for (let i=0; i<allOvertimeEntries.length; i++) {
-            if (allOvertimeEntries[i].id == args.id) {
-              idx = i;
-            }
-          }
-        }
+        let isNew = !isValidString(args.id);
         overtime = {
-          id: (idx!=-1 ? args.id : uuidv4()),
-          date: args.date,
-          startTime: args.startTime,
-          endTime: args.endTime,
-          freeTimeOn: args.freeTimeOn,
-          comment: args.comment
+          id: (isNew ? uuidv4() : args.id),
+          user: staticUser
         };
+        if (isValidString(args.date)) {
+            overtime.date = args.date;
+        }
+        if (isValidString(args.startTime)) {
+            overtime.startTime = args.startTime;
+        }
+        if (isValidString(args.endTime)) {
+            overtime.endTime = args.endTime;
+        }
+        if (isValidString(args.freeTimeOn)) {
+            overtime.freeTimeOn = args.freeTimeOn;
+        }
+        if (isValidString(args.comment)) {
+            overtime.comment = args.comment;
+        }
 
         return new Promise((resolve, reject) => {
-            if(idx == -1) {
-              allOvertimeEntries.push(overtime);
+            if(isNew) {
+              OvertimeDB.OvertimeDB.addOvertime(resolve, reject, overtime);
             } else {
-              allOvertimeEntries[idx] = overtime;
+              OvertimeDB.OvertimeDB.editOvertime(resolve, reject, overtime);
             }
-            resolve(overtime)
         })
     }
 }
@@ -199,21 +157,8 @@ var MutationDelete = {
         }
     },
     resolve: (root, args) => {
-        let idx = -1;
-        if (args.id) {
-          for (let i=0; i<allOvertimeEntries.length; i++) {
-            if (allOvertimeEntries[i].id == args.id) {
-              idx = i;
-            }
-          }
-        }
         return new Promise((resolve, reject) => {
-            if(idx == -1) {
-              reject('Could not delete the overtime with id ' + args.id);
-            } else {
-              allOvertimeEntries.splice(idx,1);
-              resolve({id: args.id})
-            }
+            OvertimeDB.OvertimeDB.deleteOvertime(resolve, reject, {"id":args.id,"user":staticUser});
         })
     }
 }
@@ -222,8 +167,7 @@ var MutationType = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
         add: MutationAdd,
-        delete: MutationDelete,
-        //   save: MutationSave
+        delete: MutationDelete
     }
 })
 
