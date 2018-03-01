@@ -1,23 +1,13 @@
-var express = require('express')
-var Schema = require('./schema')
-var graphQLHTTP = require('express-graphql')
+const app = require('./app');
 
-var app = express()
-app.use('/', graphQLHTTP((req,res)=>{
-  res.set('Access-Control-Allow-Origin', '*');
-  return {
-    schema: Schema,
-    pretty: true,
-    graphiql: true
-  }
-}));
+app.set( 'port', 8080);
 
-app.listen(process.env.PORT || 8080, (err) => {
+app.listen(app.get('port'), (err) => {
   if (err) {
     console.error(err)
     return
   }
-  console.log(`GraphQL Server is now running on localhost:${process.env.PORT || 8080}`)
+  console.log('GraphQL Server is now running on localhost:'+app.get('port'));
 })
 
 
