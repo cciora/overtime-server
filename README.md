@@ -7,6 +7,7 @@
 
 # settup local DynamoDB: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html
 
+# Deploy the GraphQL Server app as a lambda function: https://cloudacademy.com/blog/how-to-write-graphql-apps-using-aws-lambda/
 <!-- query Query {
   overtimes {
     id, comment, date, startTime, endTime, freeTimeOn, user
@@ -36,3 +37,6 @@ mutation Add {
     id
   }
 } -->
+
+# When deploygin to AWS:
+- provide the PolicyName "AmazonDynamoDBFullAccess" to the lambda role granted to the lambda function (Can be done from IAM). This is required so that the lambda function can use DynamoDB

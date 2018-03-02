@@ -7,7 +7,7 @@ app.use('/', graphQLHTTP((req,res)=>{
   res.set('Access-Control-Allow-Origin', '*');
   return {
     schema: Schema,
-    pretty: true,
+    //pretty: true,
     graphiql: true
   }
 }));

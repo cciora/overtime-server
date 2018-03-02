@@ -1,6 +1,9 @@
 var AWS = require("aws-sdk");
+var Config = require('../config')
 
-AWS.config.loadFromPath('./db/credentials.json');
+if(Config.DB_INSTALLATION_TYPE == "LOCAL") {
+    AWS.config.loadFromPath('./db/credentials.json');
+}
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
