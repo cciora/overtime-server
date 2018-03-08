@@ -22,8 +22,8 @@ var OvertimeDB = {
                 console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
                 errorFunction(err);
             } else {
-                console.log("Added item:", JSON.stringify(data, null, 2));
-                successFunction(data);
+                console.log("Added item:", JSON.stringify(params.Item, null, 2));
+                successFunction(params.Item);
             }
         });
     },
@@ -56,7 +56,7 @@ var OvertimeDB = {
                 errorFunction(err);
             } else {
                 console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
-                successFunction(data);
+                successFunction(overtime);
             }
         });
     },
@@ -100,7 +100,7 @@ var OvertimeDB = {
                 successFunction(data.Items);
             }
         });
-    }, 
+    },
 
     deleteOvertime(successFunction, errorFunction, args) {
         var params = {
