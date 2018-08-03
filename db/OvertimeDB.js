@@ -7,13 +7,13 @@ if(Config.DB_INSTALLATION_TYPE == "LOCAL") {
 
 var docClient = new AWS.DynamoDB.DocumentClient();
 
-var tableName = "Overtimes";
+var TableNames = {OVERTIMES: "Overtimes", USERS: "Users"};
 
 var OvertimeDB = {
 
     addOvertime(successFunction, errorFunction, overtime) {
         var params = {
-            TableName: tableName,
+            TableName: TableNames.OVERTIMES,
             Item: overtime
         };
 
@@ -30,7 +30,7 @@ var OvertimeDB = {
 
     editOvertime(successFunction, errorFunction, overtime) {
         var params = {
-            TableName: tableName,
+            TableName: TableNames.OVERTIMES,
             Key: {
                 "user":overtime.user,
                 "id":overtime.id
@@ -63,7 +63,7 @@ var OvertimeDB = {
 
     findOvertime(successFunction, errorFunction, args) {
         var params = {
-            TableName: tableName,
+            TableName: TableNames.OVERTIMES,
             Key: {
                 "user": args.user,
                 "id": args.id
@@ -82,7 +82,7 @@ var OvertimeDB = {
 
     searchOvertimes(successFunction, errorFunction, searchParams) {
         var params = {
-            TableName : tableName,
+            TableName : TableNames.OVERTIMES,
             KeyConditionExpression: "#usr= :user",
             ExpressionAttributeNames:{
                 "#usr": "user"
@@ -104,9 +104,107 @@ var OvertimeDB = {
 
     deleteOvertime(successFunction, errorFunction, args) {
         var params = {
-            TableName: tableName,
+            TableName: TableNames.OVERTIMES,
             Key: {
                 "user": args.user,
+                "id": args.id
+            },
+            ConditionExpression:"id = :id",
+            ExpressionAttributeValues: {
+                ":id": args.id
+            }
+        };
+        docClient.delete(params, function(err, data) {
+            if (err) {
+                console.error("Unable to delete item. Error JSON:", JSON.stringify(err, null, 2));
+                errorFunction(err);
+            } else {
+                console.log("DeleteItem succeeded:", JSON.stringify(data, null, 2));
+                successFunction(data);
+            }
+        });
+    },
+
+    addUser(successFunction, errorFunction, user) {
+        var params = {
+            TableName: TableNames.USERS,
+            Item: user
+        };
+
+        docClient.put(params, function(err, data) {
+            if (err) {
+                console.error("Unable to add item. Error JSON:", JSON.stringify(err, null, 2));
+                errorFunction(err);
+            } else {
+                console.log("Added item:", JSON.stringify(params.Item, null, 2));
+                successFunction(params.Item);
+            }
+        });
+    },
+
+    editUser(successFunction, errorFunction, user) {
+        var params = {
+            TableName: TableNames.USERS,
+            Key: {
+                "id": user.id
+            },
+            UpdateExpression: "set firstName=:f, lastName=:l, roles=:r",
+            ExpressionAttributeValues:{
+                ":f":user.firstName,
+                ":l":user.lastName,
+                ":r":(user.roles ? user.roles : [])
+            },
+            ReturnValues:"UPDATED_NEW"
+        };
+
+        docClient.update(params, function(err, data) {
+            if (err) {
+                console.error("Unable to update item. Error JSON:", JSON.stringify(err, null, 2));
+                errorFunction(err);
+            } else {
+                console.log("UpdateItem succeeded:", JSON.stringify(data, null, 2));
+                successFunction(overtime);
+            }
+        });
+    },
+
+    findUser(successFunction, errorFunction, args) {
+        var params = {
+            TableName: TableNames.USERS,
+            Key: {
+                "id": args.id
+            }
+        };
+        docClient.get(params, function(err, data) {
+            if (err) {
+                console.error("Unable to read item. Error JSON:", JSON.stringify(err, null, 2));
+                errorFunction(err);
+            } else {
+                console.log("GetItem succeeded:", JSON.stringify(data, null, 2));
+                successFunction(data.Item);
+            }
+        });
+    },
+
+    getAllUsers(successFunction, errorFunction) {
+        var params = {
+            TableName : TableNames.USERS
+        };
+        return docClient.scan(params, function(err, data) {
+            if (err) {
+                console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+                errorFunction(err)
+            } else {
+                console.log("Query succeeded.");
+                successFunction(data.Items);
+            }
+        });
+    },
+
+    deleteUser(successFunction, errorFunction, args) {
+        var params = {
+            TableName: TableNames.USERS,
+            Key: {
                 "id": args.id
             },
             ConditionExpression:"id = :id",

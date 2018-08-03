@@ -51,6 +51,28 @@ var OvertimeType = new GraphQLObjectType({
     })
 })
 
+var UserType = new GraphQLObjectType({
+    name: 'user',
+    fields: () => ({
+        id: {
+            type: GraphQLString,
+            description: 'User id'
+        },
+        firstName: {
+            type: GraphQLString,
+            description: 'User FirstName'
+        }, 
+        lastName: {
+            type: GraphQLString,
+            description: 'User LastName'
+        },
+        roles: {
+            type: new GraphQLList(GraphQLString),
+            description: 'User roles'
+        }
+    })
+})
+
 var promiseAllOvertimes = () => {
     return new Promise((resolve, reject) => {
         OvertimeDB.OvertimeDB.searchOvertimes(resolve, reject, {"user":staticUser});
@@ -63,13 +85,25 @@ var promiseGetOvertime = (id) => {
   });
 }
 
+var promiseAllUsers = () => {
+    return new Promise((resolve, reject) => {
+        OvertimeDB.OvertimeDB.getAllUsers(resolve, reject);
+    })
+}
+
+var promiseGetUser = (id) => {
+    return new Promise((resolve, reject) => {
+      OvertimeDB.OvertimeDB.findUser(resolve, reject, {"id":id});
+    });
+  }
+
 var QueryType = new GraphQLObjectType({
     name: 'Query',
     fields: () => ({
         overtimes: {
             type: new GraphQLList(OvertimeType),
             resolve: () => {
-                return promiseAllOvertimes()
+                return promiseAllOvertimes();
             }
         },
         overtime: {
@@ -81,12 +115,27 @@ var QueryType = new GraphQLObjectType({
           resolve: (root, args) => {
             return promiseGetOvertime(args.id);
           }
+        },
+        users: {
+            type: new GraphQLList(UserType),
+            resolve: () => {
+                return promiseAllUsers();
+            }
+        },
+        user: {
+            type: UserType,
+            args: {
+                id: {type: new GraphQLNonNull(GraphQLID)}
+            },
+            resolve: (root, args) => {
+                return promiseGetUser(args.id);
+            }
         }
     })
 })
 
 
-var MutationAdd = {
+var MutationAddOvertime = {
     type: OvertimeType,
     description: 'Add an Overtime',
     args: {
@@ -147,7 +196,7 @@ var MutationAdd = {
     }
 }
 
-var MutationDelete = {
+var MutationDeleteOvertime = {
     type: OvertimeType,
     description: 'Delete an Overtime',
     args: {
@@ -163,11 +212,64 @@ var MutationDelete = {
     }
 }
 
+var MutationAddUser = {
+    type: UserType,
+    description: 'Add a new User',
+    args: {
+        id: {
+          name: 'User ID',
+          type: new GraphQLNonNull(GraphQLString)
+        },
+        firstName: {
+            name: 'User Firstname',
+            type: new GraphQLNonNull(GraphQLString)
+        },
+        lastName: {
+            name: 'User Lastname',
+            type: new GraphQLNonNull(GraphQLString)
+        },
+        roles : {
+            name: 'User roles',
+            type: new GraphQLList(GraphQLString)
+        }
+    },
+    resolve: (root, args) => {
+        user = {
+          id: args.id,
+          firstName: args.firstName,
+          lastName: args.lastName,
+          roles: args.roles
+        };
+        
+        return new Promise((resolve, reject) => {
+            OvertimeDB.OvertimeDB.addUser(resolve, reject, user);
+        })
+    }
+}
+
+var MutationDeleteUser = {
+    type: OvertimeType,
+    description: 'Delete an User',
+    args: {
+        id: {
+          name: 'User ID',
+          type: GraphQLString
+        }
+    },
+    resolve: (root, args) => {
+        return new Promise((resolve, reject) => {
+            OvertimeDB.OvertimeDB.deleteUser(resolve, reject, {"id":args.id});
+        })
+    }
+}
+
 var MutationType = new GraphQLObjectType({
     name: 'Mutation',
     fields: {
-        add: MutationAdd,
-        delete: MutationDelete
+        addOvertime: MutationAddOvertime,
+        deleteOvertime: MutationDeleteOvertime,
+        addUser: MutationAddUser,
+        deleteUser: MutationDeleteUser
     }
 })
 
