@@ -11,7 +11,7 @@ var GraphQLSchema = graphql.GraphQLSchema;
 
 var OvertimeDB = require('./db/OvertimeDB');
 
-var staticUser = "cciora";
+var staticUser = "ciorac";
 
 var isValidString = function(str) {
     return str && str.trim() != "";
